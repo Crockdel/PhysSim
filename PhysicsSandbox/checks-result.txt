@@ -1,0 +1,22 @@
+﻿﻿PASS: body type mapping
+PASS: demo has 14 objects
+PASS: 30 seconds of collisions remain finite and inside walls
+PASS: XML restores count and simulation time
+PASS: XML restores transforms and velocities
+PASS: gravity accelerates dynamic body downward
+PASS: gravity can be disabled
+PASS: kinematic velocity and static immobility
+PASS: invalid scene rejected
+PASS: density change updates mass immediately (4x density -> 4x mass)
+PASS: size change reports rebuilt fixture
+PASS: size change updates mass by area (3x3 vs 1x1 -> 9x mass)
+PASS: size change keeps position
+PASS: size change keeps rotation
+PASS: size change keeps velocity
+PASS: size change leaves exactly one polygon fixture
+PASS: shape change rebuilds fixture as circle
+PASS: mass can be set directly (density = mass / area)
+PASS: friction and restitution apply immediately
+PASS: velocity applies immediately
+
+Все проверки пройдены.

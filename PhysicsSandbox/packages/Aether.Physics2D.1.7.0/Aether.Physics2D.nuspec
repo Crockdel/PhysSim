@@ -1,0 +1,17 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
+  <metadata>
+    <id>Aether.Physics2D</id>
+    <version>1.7.0</version>
+    <title>Aether.Physics2D</title>
+    <authors>Kastellanos Nikolaos</authors>
+    <owners>Kastellanos Nikolaos</owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <licenseUrl>https://github.com/tainicom/Aether.Physics2D/blob/master/LICENSE</licenseUrl>
+    <projectUrl>https://github.com/tainicom/Aether.Physics2D</projectUrl>
+    <iconUrl>https://github.com/tainicom/Aether.Physics2D/raw/master/Icons/NugetLogo.png</iconUrl>
+    <description>Aether.Physics2D is a 2D collision detection system.</description>
+    <copyright>Copyright © Kastellanos Nikolaos 2015-2023</copyright>
+    <tags>C# Physics 2D game box2d farseerPhysics farseer</tags>
+  </metadata>
+</package>

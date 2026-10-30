@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<coreProperties xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://schemas.openxmlformats.org/package/2006/metadata/core-properties">
+  <dc:creator>Kastellanos Nikolaos</dc:creator>
+  <dc:description>Aether.Physics2D is a 2D collision detection system.</dc:description>
+  <dc:identifier>Aether.Physics2D</dc:identifier>
+  <version>1.7.0.0</version>
+  <keywords>C# Physics 2D game box2d farseerPhysics farseer</keywords>
+  <lastModifiedBy>NuGet, Version=3.5.0.1938, Culture=neutral, PublicKeyToken=31bf3856ad364e35;Microsoft Windows NT 6.2.9200.0;.NET Framework 4.5</lastModifiedBy>
+</coreProperties>
