@@ -4,6 +4,6 @@
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' "><OutputPath>bin\Debug\</OutputPath><DebugSymbols>true</DebugSymbols><DebugType>full</DebugType></PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' "><OutputPath>bin\Release\</OutputPath><Optimize>true</Optimize><DebugType>pdbonly</DebugType></PropertyGroup>
   <ItemGroup><Reference Include="System"/><Reference Include="System.Core"/><Reference Include="System.Drawing"/><Reference Include="System.Windows.Forms"/><Reference Include="System.Xml"/><Reference Include="Aether.Physics2D"><HintPath>packages\Aether.Physics2D.1.7.0\lib\net40\Aether.Physics2D.dll</HintPath><Private>True</Private></Reference></ItemGroup>
-  <ItemGroup><Compile Include="PhysicsWorld.cs"/><Compile Include="SimulationCanvas.cs"/><Compile Include="MainForm.cs"/><Compile Include="Program.cs"/><None Include="App.config"/></ItemGroup>
+  <ItemGroup><Compile Include="PhysicsWorld.cs"/><Compile Include="SimulationCanvas.cs"/><Compile Include="MainForm.cs"/><Compile Include="Theme.cs"/><Compile Include="Program.cs"/><None Include="App.config"/></ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets"/>
 </Project>

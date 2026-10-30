@@ -56,6 +56,14 @@ namespace PhysicsSandbox
         // Положение задаёт докинг WinForms, поэтому оно не зависит от размера окна.
         readonly Label cursorInfo = new Label { Dock = DockStyle.Right, Width = 260, TextAlign = ContentAlignment.MiddleRight };
 
+        // Служебная информация (FPS, тела, контакты, время) выводится в отдельной метке строки
+        // состояния, левее координат курсора. Раньше она писалась прямо в строку состояния и
+        // через полсекунды затирала сообщения («Сцена сохранена: ...», «Пауза...» и другие).
+        readonly Label infoLabel = new Label { Dock = DockStyle.Right, Width = 430, TextAlign = ContentAlignment.MiddleRight };
+
+        // Правый отступ текста строки состояния: ширина двух меток справа, чтобы текст не уходил под них.
+        const int StatusRightPadding = 430 + 260;
+
         /// <summary>Правая панель управления с прокруткой.</summary>
         readonly FlowLayoutPanel side = new FlowLayoutPanel
         {
@@ -196,6 +204,9 @@ namespace PhysicsSandbox
             Controls.Add(canvas);
             // Метка координат живёт внутри холста и привязана к правому нижнему углу,
             // поэтому при сворачивании и изменении размера её положение задаёт Anchor.
+            // infoLabel добавляется первой: метка с большим индексом докается раньше и занимает самый
+            // правый край, поэтому координаты курсора остаются у края, а служебная информация левее.
+            status.Controls.Add(infoLabel);
             status.Controls.Add(cursorInfo);
             // WinForms докает элементы с наибольшим индексом первыми, а Fill-элемент
             // должен получать остаток, поэтому холст ставим на индекс 0 (докается последним).
@@ -224,7 +235,8 @@ namespace PhysicsSandbox
             Theme.Apply(rowWidth);
             Theme.Apply(rowHeight);
             status.Font = Theme.SmallFont;
-            status.Padding = new Padding(10, 0, 0, 0);
+            status.Padding = new Padding(10, 0, StatusRightPadding, 0);
+            status.AutoEllipsis = true;
             status.BackColor = Theme.Canvas;
             status.ForeColor = Theme.TextMuted;
             ApplyBarColors();
@@ -239,13 +251,18 @@ namespace PhysicsSandbox
         void ApplyBarColors()
         {
             status.Font = Theme.SmallFont;
-            status.Padding = new Padding(10, 0, 0, 0);
+            status.Padding = new Padding(10, 0, StatusRightPadding, 0);
+            status.AutoEllipsis = true;
             status.BackColor = Theme.Canvas;
             status.ForeColor = Theme.TextMuted;
             cursorInfo.Font = Theme.SmallFont;
             cursorInfo.Padding = new Padding(0, 0, 10, 0);
             cursorInfo.BackColor = Theme.Canvas;
             cursorInfo.ForeColor = Theme.TextMuted;
+            infoLabel.Font = Theme.SmallFont;
+            infoLabel.Padding = new Padding(0, 0, 10, 0);
+            infoLabel.BackColor = Theme.Canvas;
+            infoLabel.ForeColor = Theme.TextMuted;
             canvas.BackColor = Theme.Canvas;
         }
 
@@ -342,7 +359,7 @@ namespace PhysicsSandbox
             AddButton(toolbar, "Шаг", StepOnce,
                 "Выполнить ровно один шаг физического движка.\nУдобно для покадрового разбора движения.");
             AddButton(toolbar, "↶ Сброс", Restore,
-                "Вернуть сцену к состоянию, зафиксированному перед запуском.\nВосстанавливаются положение и скорости тел.");
+                "Вернуть сцену к состоянию, зафиксированному при её создании или загрузке.\nВосстанавливаются положение и скорости тел.");
             AddButton(toolbar, "Демо", () => SetScene(PhysicsWorld.Demo()),
                 "Загрузить демонстрационную сцену.\nДве наклонные плоскости, горка тел и башня из кубов.");
             AddButton(toolbar, "Удалить", DeleteSelected,
@@ -479,6 +496,11 @@ namespace PhysicsSandbox
             gravity.CheckedChanged += (s, e) => { physics.Settings.GravityEnabled = gravity.Checked; physics.UpdateGravity(); };
             dt.ValueChanged += (s, e) => { physics.Settings.Step = (float)dt.Value / 1000f; accumulator = 0; };
             substeps.ValueChanged += (s, e) => { if (!syncing) physics.Settings.SubSteps = (int)substeps.Value; };
+
+            // Глобальные трение и упругость для новых тел хранятся в параметрах мира: так они
+            // попадают в файл сцены и восстанавливаются при загрузке. Существующие тела не меняются.
+            friction.ValueChanged += (s, e) => { if (!syncing) physics.Settings.DefaultFriction = (float)friction.Value; };
+            restitution.ValueChanged += (s, e) => { if (!syncing) physics.Settings.DefaultRestitution = (float)restitution.Value; };
         }
 
         /// <summary>Размещает на группе подпись и поле по координатам.</summary>
@@ -654,7 +676,7 @@ namespace PhysicsSandbox
             status.Text = "Выполнен один шаг физического движка.";
         }
 
-        /// <summary>Возвращает сцену к снимку, сделанному перед запуском.</summary>
+        /// <summary>Возвращает сцену к снимку, сделанному при её создании или загрузке (SetScene).</summary>
         void Restore()
         {
             if (baseline == null) return;
@@ -675,6 +697,7 @@ namespace PhysicsSandbox
                 GravityY = physics.Settings.GravityY,
                 GravityEnabled = physics.Settings.GravityEnabled,
                 Step = physics.Settings.Step,
+                SubSteps = physics.Settings.SubSteps,   // число подшагов — тоже параметр мира, он не сбрасывается
                 DefaultFriction = physics.Settings.DefaultFriction,
                 DefaultRestitution = physics.Settings.DefaultRestitution
             };
@@ -694,6 +717,8 @@ namespace PhysicsSandbox
             gy.Value = Clamp((decimal)physics.Settings.GravityY, gy);
             dt.Value = Clamp((decimal)(physics.Settings.Step * 1000), dt);
             substeps.Value = Clamp(physics.Settings.SubSteps, substeps);
+            friction.Value = Clamp((decimal)physics.Settings.DefaultFriction, friction);
+            restitution.Value = Clamp((decimal)physics.Settings.DefaultRestitution, restitution);
             gravity.Checked = physics.Settings.GravityEnabled;
             syncing = false;
             UpdateSelectedPanel();
@@ -780,7 +805,7 @@ namespace PhysicsSandbox
                 fps = (int)Math.Round(renderedFrames / fpsElapsed);
                 renderedFrames = 0;
                 fpsElapsed = 0;
-                status.Text = string.Format(CultureInfo.InvariantCulture,
+                infoLabel.Text = string.Format(CultureInfo.InvariantCulture,
                     "FPS: {0}   |   тел: {1}   |   контактов: {2}   |   время: {3:0.00} с",
                     fps, physics.Bodies.Count, physics.World.ContactCount, physics.Time);
             }
@@ -1389,17 +1414,19 @@ namespace PhysicsSandbox
                 e.Handled = true;
                 return;
             }
-            if (e.KeyCode == Keys.Space)
+            // Пробел, Delete и Esc, как и остальные горячие клавиши, не срабатывают в поле ввода:
+            // там они нужны для набора и правки числа (иначе Delete удалял бы выбранное тело).
+            if (e.KeyCode == Keys.Space && !InputFocused())
             {
                 if (running) Pause(); else Start();
                 e.Handled = true;
             }
-            else if (e.KeyCode == Keys.Delete && selected != null)
+            else if (e.KeyCode == Keys.Delete && selected != null && !InputFocused())
             {
                 DeleteSelected();
                 e.Handled = true;
             }
-            else if (e.KeyCode == Keys.Escape)
+            else if (e.KeyCode == Keys.Escape && !InputFocused())
             {
                 ReleaseJoint();
                 selected = null;
