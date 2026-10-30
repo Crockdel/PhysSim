@@ -147,6 +147,7 @@ namespace PhysicsSandbox
         SceneBody selected;
         FixedMouseJoint mouseJoint;
         bool pauseDragging;   // перетаскивание тела на паузе: двигаем тело напрямую, без джоинта
+        Vector2 pauseGrabOffset;   // смещение центра тела относительно точки захвата (тело не «прыгает» к курсору)
         SceneData baseline;
         bool running, syncing;
         double previous, accumulator, fpsElapsed;
@@ -880,9 +881,9 @@ namespace PhysicsSandbox
                 if (velocityView.SelectedIndex == 2)
                 {
                     foreach (var item in physics.Bodies)
-                        if (item.Body.BodyType == BodyType.Dynamic) DrawVelocityArrow(g, item.Body);
+                        if (item.Body.BodyType != BodyType.Static) DrawVelocityArrow(g, item.Body);
                 }
-                else if (selected != null && selected.Body.BodyType == BodyType.Dynamic)
+                else if (selected != null && selected.Body.BodyType != BodyType.Static)
                 {
                     DrawVelocityArrow(g, selected.Body);
                 }
@@ -972,11 +973,10 @@ namespace PhysicsSandbox
             if (e.Button != MouseButtons.Left) return;
 
             var p = WorldPoint(e.Location);
-            if (p.X < 0 || p.X > PhysicsWorld.Width || p.Y < 0 || p.Y > PhysicsWorld.Height) return;
-
-            // --- режим создания ---
+            // --- режим создания (только внутри границ области) ---
             if (mode.SelectedIndex == 1)
             {
+                if (p.X < 0 || p.X > PhysicsWorld.Width || p.Y < 0 || p.Y > PhysicsWorld.Height) return;
                 if (physics.Bodies.Count >= 1000)
                 {
                     MessageBox.Show("Достигнут предел: 1000 тел на сцене.", "Симулятор",
@@ -1026,6 +1026,7 @@ namespace PhysicsSandbox
             if (!running)
             {
                 pauseDragging = true;
+                pauseGrabOffset = selected.Body.Position - p;
                 selected.Body.Awake = true;
                 return;
             }
@@ -1053,7 +1054,12 @@ namespace PhysicsSandbox
             {
                 var b = selected.Body;
                 // Переносим только положение. Скорость и вращение тела не меняются.
-                b.Position = WorldPoint(e.Location);
+                // Курсор удерживается в пределах холста, чтобы тело нельзя было унести за экран
+                // и потерять: за рамки области симуляции его вынести можно, но оно остаётся доступным.
+                var cursor = new Point(
+                    Math.Max(0, Math.Min(canvas.ClientSize.Width - 1, e.X)),
+                    Math.Max(0, Math.Min(canvas.ClientSize.Height - 1, e.Y)));
+                b.Position = WorldPoint(cursor) + pauseGrabOffset;
                 b.Awake = true;
                 canvas.Invalidate();
                 return;
